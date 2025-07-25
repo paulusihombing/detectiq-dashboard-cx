@@ -1,0 +1,28 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment files
+.env
+.venv/
+venv/
+ENV/
+
+# Streamlit
+.streamlit/
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+
+# Data
+*.db
+*.sqlite3
+*.h5
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
