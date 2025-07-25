@@ -27,6 +27,6 @@ Thumbs.db
 # Logs
 *.log
 
-# Ignore large data files
+# Ignore data files
 data/*.csv
 data/*.xlsx
