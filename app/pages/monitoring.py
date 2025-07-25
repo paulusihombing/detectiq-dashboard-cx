@@ -1,53 +1,75 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
 import plotly.express as px
+import pandas as pd
 
 def show():
-    df = pd.DataFrame({
-        'Index': np.arange(10),
-        'XL_Traffic': np.random.randint(50, 150, 10),
-        'SF_Traffic': np.random.randint(60, 160, 10),
-        'XL_SWE': np.random.randint(40, 100, 10),
-        'SF_SWE': np.random.randint(50, 110, 10),
-        'XL_E2E': np.random.randint(30, 90, 10),
-        'SF_E2E': np.random.randint(40, 100, 10),
-        'XL_DL': np.random.randint(70, 170, 10),
-        'SF_DL': np.random.randint(80, 180, 10),
-    })
+    df = st.session_state["dashboard_data"]
+    
+    # FILTER KABUPATEN
+    selected_kab = st.session_state.get("selected_kabupaten", "All")
+    if selected_kab != "All":
+        df = df[df["Kabupaten"] == selected_kab]
 
-    def make_chart(metric, xl_col, sf_col):
-        df_long = df[['Index', xl_col, sf_col]].melt(
-            id_vars='Index', var_name='Operator', value_name='Value')
-        df_long['Operator'] = df_long['Operator'].str.extract('(XL|SF)')
-        custom_colors = {'XL': '#1f77b4', 'SF': '#e377c2'}
+    required_cols = [
+        "DATE", "national", "traffic", "swe", "e2e_delay", "video_streaming_download_throughput"
+    ]
+    missing = [col for col in required_cols if col not in df.columns]
+    if missing:
+        st.error(f"Kolom berikut tidak ditemukan di data: {missing}")
+        return
 
+    # Konversi DATE ke datetime (optional, agar x axis lebih rapi)
+    df["DATE"] = pd.to_datetime(df["DATE"])
+
+    def make_line_chart(metric_col, title, y_title, colors):
+        # Filter hanya untuk Indonesia-SF dan Indonesia-XL
+        chart_df = df[df["national"].isin(["Indonesia-SF", "Indonesia-XL"])]
         fig = px.line(
-            df_long, x='Index', y='Value',
-            color='Operator', markers=True,
-            title=metric, height=400
+            chart_df,
+            x="DATE",
+            y=metric_col,
+            color="national",
+            color_discrete_map=colors,
+            # markers=True,
+            title=title,
         )
         fig.update_layout(
-            title=metric,
-            title_font=dict(size=18, family="Arial", color="black"),  # ⬅️ Adjust title styling here
+            title_font=dict(size=18, family="Roboto, Arial", color="black"),
+            font=dict(family="Roboto, Arial"),
             height=250,
             margin=dict(t=40, b=20, l=10, r=10),
-            xaxis_title="Index",
-            yaxis_title=metric,
-            legend_title="Operator"
+            xaxis_title="DATE",
+            yaxis_title=y_title,
+            legend_title="Operator",
         )
-        fig.for_each_trace(lambda t: t.update(line_color=custom_colors[t.name]))
         return fig
 
-    with st.container():
-        col1, col2 = st.columns([1, 1])
-        with col1:
-            st.plotly_chart(make_chart("Traffic - KQI", "XL_Traffic", "SF_Traffic"), use_container_width=True)
-        with col2:
-            st.plotly_chart(make_chart("SWE - KQI", "XL_SWE", "SF_SWE"), use_container_width=True)
+    custom_colors = {
+        "Indonesia-XL": "#1959a8",   # biru gelap
+        "Indonesia-SF": "#b6186b",   # pink gelap
+    }
 
-        col3, col4 = st.columns([1, 1])
+    with st.container():
+        col1, col2 = st.columns(2)
+        with col1:
+            st.plotly_chart(
+                make_line_chart("traffic", "Traffic - KQI", "Traffic", custom_colors),
+                use_container_width=True
+            )
+        with col2:
+            st.plotly_chart(
+                make_line_chart("swe", "SWE - KQI", "swe", custom_colors),
+                use_container_width=True
+            )
+
+        col3, col4 = st.columns(2)
         with col3:
-            st.plotly_chart(make_chart("E2E Latency - KQI", "XL_E2E", "SF_E2E"), use_container_width=True)
+            st.plotly_chart(
+                make_line_chart("e2e_delay", "E2E Latency - KQI", "E2E Latency", custom_colors),
+                use_container_width=True
+            )
         with col4:
-            st.plotly_chart(make_chart("DL Throughput - KQI", "XL_DL", "SF_DL"), use_container_width=True)
+            st.plotly_chart(
+                make_line_chart("video_streaming_download_throughput", "DL Throughput - KQI", "DL Throughput", custom_colors),
+                use_container_width=True
+            )

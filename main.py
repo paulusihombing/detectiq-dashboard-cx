@@ -10,23 +10,30 @@ st.set_page_config(page_title="Streamlit Dashboard", layout="wide")
 # --- INISIALISASI SESSION STATE ---
 init_session()
 
-# --- AMBIL DATA DARI GOOGLE DRIVE ---
+# --- PILIH SUMBER DATA (LOKAL ATAU GDRIVE) ---
+USE_LOCAL = True  # Ganti ke False jika ingin ambil dari Google Drive
+
+@st.cache_data(show_spinner=True)
+def load_local_data():
+    df = pd.read_csv("data/kab_kec_daily_kqi_plmn.csv")  # Ganti dengan file lokal kamu
+    return df
+
 @st.cache_data(show_spinner=True)
 def load_data_from_gdrive(file_id):
     url = f"https://drive.google.com/uc?id={file_id}"
-    # Jika file kamu CSV besar, bisa pakai chunksize, misal:
-    # chunks = pd.read_csv(url, chunksize=50000)
-    # df = pd.concat(chunks)
     df = pd.read_csv(url)
     return df
 
-# Masukkan file_id data utama kamu di sini:
-DATA_FILE_ID = "1D2SKmVMhZIPD4tgq9FIjItlalBFUH8LR"
+DATA_FILE_ID = "1D2SKmVMhZIPD4tgq9FIjItlalBFUH8LR"  # GDrive file_id
+
 try:
-    df = load_data_from_gdrive(DATA_FILE_ID)
+    if USE_LOCAL:
+        df = load_local_data()
+    else:
+        df = load_data_from_gdrive(DATA_FILE_ID)
     st.session_state["dashboard_data"] = df
 except Exception as e:
-    st.error(f"Gagal memuat data dari Google Drive: {e}")
+    st.error(f"Gagal memuat data: {e}")
     st.stop()
 
 # --- LOGIN & HALAMAN DASHBOARD ---

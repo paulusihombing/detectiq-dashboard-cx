@@ -2,25 +2,8 @@ import streamlit as st
 
 def show():
     with st.sidebar:
-        st.markdown("""
-            <style>
-            .sidebar-title {
-                font-size: 28px;
-                font-weight: bold;
-                padding-bottom: 0px;
-                margin-bottom: 0px;
-            }
-            .sidebar-subtitle {
-                font-size: 18px;
-                color: #666;
-                padding-top: 0px;
-                margin-top: -5px;
-                margin-bottom: 10px;
-            }
-            </style>
-            <div class="sidebar-title">XLSMART CX</div>
-            <div class="sidebar-subtitle">DetectIQ Dashboard</div>
-        """, unsafe_allow_html=True)
+        st.markdown("<h1 style='margin-bottom:0px; padding-bottom:0px; padding-top:0px;'>XLSMART CX.</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='margin-top:0px;margin-bottom:0px;padding-bottom:0px; padding-top:0px;font-size:16px;'>DetectIQ Dashboard</p>", unsafe_allow_html=True)
 
         st.divider()
 
@@ -34,9 +17,23 @@ def show():
 
         st.divider()
 
-        # Only show filters when on Monitoring page
+        # Filter Kabupaten (autocomplete)
         if st.session_state.get("page") == "Monitoring":
-            operator = st.selectbox("Operator", ["All", "XL", "SF"], key="monitoring_operator")
+            df = st.session_state.get("dashboard_data")
+            if df is not None and "Kabupaten" in df.columns:
+                kabupaten_list = ["All"] + sorted(df["Kabupaten"].dropna().unique())
+                default_kab = "KAB. GUNUNGKIDUL" if "KAB. GUNUNGKIDUL" in kabupaten_list else "All"
+                default_index = kabupaten_list.index(default_kab)
+
+                selected_kabupaten = st.selectbox(
+                    "Kabupaten",
+                    kabupaten_list,
+                    index=default_index,
+                    key="monitoring_kabupaten"
+                )
+                st.session_state["selected_kabupaten"] = selected_kabupaten
+            else:
+                st.info("Data belum dimuat atau kolom 'Kabupaten' tidak ditemukan.")
 
         st.divider()
 
