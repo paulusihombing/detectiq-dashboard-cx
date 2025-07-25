@@ -29,7 +29,7 @@ def show():
         )
         fig.update_layout(
             title=metric,
-            title_font=dict(size=18, family="Roboto", color="black"),  # ⬅️ Adjust title styling here
+            title_font=dict(size=18, family="Arial", color="black"),  # ⬅️ Adjust title styling here
             height=250,
             margin=dict(t=40, b=20, l=10, r=10),
             xaxis_title="Index",
