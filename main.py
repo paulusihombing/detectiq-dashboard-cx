@@ -15,6 +15,8 @@ USE_LOCAL = True  # Ganti ke False jika ingin ambil dari Google Drive
 
 @st.cache_data(show_spinner=True)
 def load_local_data():
+    import os
+    print("Isi folder data:", os.listdir("data"))
     df = pd.read_csv("data/kab_kec_daily_kqi_plmn.csv")  # Ganti dengan file lokal kamu
     return df
 
