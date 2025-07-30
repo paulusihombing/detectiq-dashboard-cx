@@ -8,10 +8,10 @@ def weekly_table(df):
         "SF Δ% Baseline→MOCN",
         "SF Δ% Baseline→Latest"
     ]
-    # Pastikan tipe data float
+    # Pastikan float dan dikali 100 (jika belum)
     for col in PERCENT_COLS:
         if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce")
+            df[col] = pd.to_numeric(df[col], errors="coerce") * 100
 
     def highlight(val):
         if pd.isnull(val):
@@ -23,14 +23,13 @@ def weekly_table(df):
         else:
             return ""
 
-    # Format semua kolom persentase sekaligus
     format_dict = {col: "{:.2f}%" for col in PERCENT_COLS if col in df.columns}
     styler = df.style.format(format_dict)
-    # Apply coloring per kolom
     for col in PERCENT_COLS:
         if col in df.columns:
             styler = styler.applymap(highlight, subset=[col])
     return styler
+
 
 def show():
     st.title("📈 Weekly Report")
