@@ -1,6 +1,3 @@
-import streamlit as st
-import pandas as pd
-
 def weekly_table(df):
     PERCENT_COLS = [
         "XL Δ% Baseline→MOCN",
@@ -8,7 +5,7 @@ def weekly_table(df):
         "SF Δ% Baseline→MOCN",
         "SF Δ% Baseline→Latest"
     ]
-    # Ensure float and percent
+    # Pastikan float (handle error jika sudah % string)
     for col in PERCENT_COLS:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
@@ -17,26 +14,18 @@ def weekly_table(df):
         if pd.isnull(val):
             return ""
         if val < 0:
-            return "color: white; background-color: #d0312d"    # Red
+            return "color: white; background-color: #d0312d"
         elif val > 0:
-            return "color: white; background-color: #1ea75f"    # Green
+            return "color: white; background-color: #1ea75f"
         else:
             return ""
 
-    # Build styler: percent format + color per cell
-    styler = df.style
+    # Apply percent format ke SEMUA percent cols sekaligus
+    format_dict = {col: "{:.2f}%" for col in PERCENT_COLS if col in df.columns}
+    styler = df.style.format(format_dict)
+    # Apply coloring per kolom (tetap satu per satu)
     for col in PERCENT_COLS:
         if col in df.columns:
-            styler = styler.format({col: "{:.2f}%"}).applymap(highlight, subset=[col])
+            styler = styler.applymap(highlight, subset=[col])
 
     return styler
-
-def show():
-    st.title("📈 Weekly Report")
-    st.write("Laporan growth mingguan.")
-
-    df = st.session_state.get("growth_data")
-    if df is not None and not df.empty:
-        st.dataframe(weekly_table(df), use_container_width=True)
-    else:
-        st.warning("Data sheet 'Growth' belum tersedia atau kosong.")
